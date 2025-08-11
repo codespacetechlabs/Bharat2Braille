@@ -20,7 +20,7 @@ Supports multiple Indian languages using **liblouis** translation tables, with o
 
 ---
 
-## 📂 Key Files
+## 📂 Project Structure
 
 ---
 
