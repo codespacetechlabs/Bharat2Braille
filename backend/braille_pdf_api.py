@@ -7,6 +7,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from reportlab.pdfbase.ttfonts import TTFont
 import uuid
 import os
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.enums import TA_JUSTIFY
+from reportlab.lib.pagesizes import A4
 
 app = FastAPI()
 
@@ -57,10 +61,24 @@ def convert_to_braille_pdf(
         pdf_filename = f"{uuid.uuid4().hex}.pdf"
         pdf_path = os.path.join(PDF_DIR, pdf_filename)
 
-        c = canvas.Canvas(pdf_path)
-        c.setFont(FONT_NAME, 18)
-        c.drawString(100, 750, braille_output)
-        c.save()
+        # Use SimpleDocTemplate to allow justified text
+        doc = SimpleDocTemplate(pdf_path, pagesize=A4)
+        styles = getSampleStyleSheet()
+        justified_style = ParagraphStyle(
+            'Justify',
+            parent=styles['Normal'],
+            fontName=FONT_NAME,
+            fontSize=18,
+            leading=22,
+            alignment=TA_JUSTIFY
+        )
+
+        story = []
+        for line in braille_output.split('\n'):
+            story.append(Paragraph(line, justified_style))
+            story.append(Spacer(1, 6))  # small space between lines
+
+        doc.build(story)
 
         return FileResponse(
             path=pdf_path,
