@@ -3,6 +3,8 @@ from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware  # 🔹 Import CORS middleware
 import subprocess
 
+LOU_TRANSLATE = r";C:\Users\Lenovo\Downloads\liblouis-3.37.0-win64\bin"
+
 app = FastAPI()
 
 # 🔹 Add CORS middleware
@@ -35,12 +37,11 @@ def convert_to_braille(
         # Translate text to Braille using liblouis
         result = subprocess.run(
             ["lou_translate", table],
-            input=text,
-            text=True,
+            input=text.encode("utf-8"),
             capture_output=True,
             check=True
         )
-        braille_output = result.stdout.strip()
+        braille_output = result.stdout.decode("utf-8").strip()
 
         return JSONResponse(content={"braille": braille_output})
 

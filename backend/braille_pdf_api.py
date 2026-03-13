@@ -8,6 +8,7 @@ from reportlab.lib.pagesizes import A4
 from reportlab.lib.colors import Color
 import subprocess, uuid, os, regex
 
+LOU_TRANSLATE = r"C:\Users\Lenovo\Downloads\liblouis-3.37.0-win64\bin\lou_translate.exe"
 app = FastAPI()
 
 app.add_middleware(
@@ -41,14 +42,13 @@ def liblouis_translate(text: str, table: str) -> str:
     Use liblouis (cli) to translate Devanagari to Braille.
     """
     res = subprocess.run(
-        ["lou_translate", table],
-        input=text,
-        text=True,
+        [LOU_TRANSLATE, table],
+        input=text.encode("utf-8"),
         capture_output=True
     )
     if res.returncode != 0:
-        raise RuntimeError(f"liblouis translation failed: {res.stderr.strip()}")
-    return res.stdout.strip()
+        raise RuntimeError(f"liblouis translation failed: {res.stderr.decode().strip()}")
+    return res.stdout.decode("utf-8").strip()
 
 def split_braille_cells(braille: str):
     """
