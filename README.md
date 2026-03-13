@@ -41,9 +41,12 @@ Understanding the project structure will help you navigate and contribute effect
 ```
 braille_app/
 ├── backend/                          # FastAPI backend
-│   ├── main.py                       # API endpoints
+│   ├── braille_api.py                # Braille text translation API (port 8000)
+│   ├── braille_pdf_api.py            # Braille PDF generation API (port 8001)
 │   ├── requirements.txt              # Backend dependencies
-│   └── braille_utils.py              # Braille conversion logic
+│   └── fonts/                        # Font files for PDF generation
+│       ├── NotoSansDevanagari-Regular.ttf
+│       └── NotoSansSymbols2-Regular.ttf
 │
 ├── src/                              # React frontend
 │   ├── App.jsx                       # Main React component
@@ -84,16 +87,39 @@ cd backend
 pip install -r requirements.txt
 ```
 
-4. **Run the FastAPI server** (development mode):
-```bash
-uvicorn main:app --reload --port 8001
-```
+4. **Install liblouis** (Braille translation engine):
+   - Download the Windows build from [liblouis downloads](https://liblouis.io/downloads/) — use `liblouis-3.37.0-win64.zip` for 64-bit Windows
+   - Extract and note the full path to `lou_translate.exe` inside the `bin\` folder
+   - Set the `LOU_TRANSLATE` variable at the top of both `braille_api.py` and `braille_pdf_api.py`:
+     ```python
+     LOU_TRANSLATE = r"C:\path\to\liblouis-3.37.0-win64\bin\lou_translate.exe"
+     ```
 
-5. The API will be available at: [http://127.0.0.1:8001](http://127.0.0.1:8001)
+5. **Add font files** for PDF generation:
+   - Create a `fonts/` folder inside `backend/`
+   - Download and place the following fonts inside it:
+     - `NotoSansDevanagari-Regular.ttf` from [Google Fonts](https://fonts.google.com/noto/specimen/Noto+Sans+Devanagari)
+     - `NotoSansSymbols2-Regular.ttf` from [Google Fonts](https://fonts.google.com/noto/specimen/Noto+Sans+Symbols+2)
+
+6. **Run the two backend servers** (open two separate terminals):
+
+   *Terminal 1 — Braille text API (port 8000):*
+   ```bash
+   uvicorn braille_api:app --reload --port 8000
+   ```
+
+   *Terminal 2 — Braille PDF API (port 8001):*
+   ```bash
+   uvicorn braille_pdf_api:app --reload --port 8001
+   ```
+
+7. The APIs will be available at:
+   - Text API: [http://127.0.0.1:8000](http://127.0.0.1:8000)
+   - PDF API: [http://127.0.0.1:8001](http://127.0.0.1:8001)
 
 ### Frontend Setup (React + Vite)
 
-1. **Navigate to the frontend directory**:
+1. **Navigate to the project root**:
 ```bash
 cd braille_app
 ```
@@ -108,7 +134,7 @@ npm install
 npm run dev
 ```
 
-4. Open your browser at the URL shown in the terminal (typically `http://localhost:3000`).
+4. Open your browser at the URL shown in the terminal (typically `http://localhost:5173`).
 
 ---
 
@@ -221,17 +247,18 @@ Our project currently supports:
 - Malayalam (`ml-in-g1.utb`)
 - Marathi (`mr-in-g1.utb`)
 - Bengali (`bn-in-g1.utb`)
+- Gujarati (`gu-in-g1.utb`)
 
 ### To Add a New Language:
 
 1. **Check liblouis compatibility**: Ensure the language has a liblouis translation table.
 
-2. **Update backend** (`backend/braille_utils.py`):
-   - Add the new language to the supported languages dictionary.
+2. **Update backend** (`backend/braille_api.py` and `backend/braille_pdf_api.py`):
+   - Add the new language to the `SUPPORTED_TABLES` dictionary.
    - Add the corresponding liblouis table filename.
 
 3. **Update frontend** (`src/App.jsx`):
-   - Add the new language option to the language selector.
+   - Add the new language option to the `languageTables` object.
    - Ensure proper language name display.
 
 4. **Test thoroughly**:
@@ -240,7 +267,7 @@ Our project currently supports:
    - Test file upload functionality.
 
 5. **Update documentation**:
-   - Add the new language to the README.md features list.
+   - Add the new language to the README.md supported languages list.
    - Update any relevant documentation.
 
 ### Language Table Resources:
