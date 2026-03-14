@@ -10,7 +10,7 @@ export function useBraille(text, table = "hi-in-g1.utb") {
 
     const fetchBraille = async () => {
       try {
-        const res = await axios.get("http://127.0.0.1:8000/braille", {
+        const res = await axios.get("http://127.0.0.1:8000/api/braille/braille/", {
           params: { text, table },
         });
         setBraille(res.data.braille);
