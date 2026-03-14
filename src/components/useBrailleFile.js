@@ -5,7 +5,7 @@ export function useBrailleFile() {
     if (!text) return;
 
     try {
-      const response = await axios.get("http://127.0.0.1:8001api/pdf/braille/pdf", {
+      const response = await axios.get("http://127.0.0.1:8000/api/pdf/braille/pdf", {
         params: { text, table },
         responseType: "blob", // important for binary file
       });
