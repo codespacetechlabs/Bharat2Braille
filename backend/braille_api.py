@@ -1,16 +1,15 @@
 from fastapi import FastAPI, Query
 from fastapi.responses import JSONResponse
-from fastapi.middleware.cors import CORSMiddleware  # 🔹 Import CORS middleware
+from fastapi.middleware.cors import CORSMiddleware
 import subprocess
 
-LOU_TRANSLATE = r";C:\Users\Lenovo\Downloads\liblouis-3.37.0-win64\bin"
+LOU_TRANSLATE = r"C:\Users\Lenovo\Downloads\liblouis-3.37.0-win64\bin\lou_translate.exe"
 
 app = FastAPI()
 
-# 🔹 Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # or use ["*"] to allow all origins (less secure)
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -34,16 +33,14 @@ def convert_to_braille(
         return JSONResponse(content={"error": f"Unsupported language table: {table}"}, status_code=400)
 
     try:
-        # Translate text to Braille using liblouis
         result = subprocess.run(
-            ["lou_translate", table],
+            [LOU_TRANSLATE, table],
             input=text.encode("utf-8"),
             capture_output=True,
             check=True
         )
         braille_output = result.stdout.decode("utf-8").strip()
-
         return JSONResponse(content={"braille": braille_output})
 
     except subprocess.CalledProcessError as e:
-        return JSONResponse(content={"error": e.stderr}, status_code=500)
+        return JSONResponse(content={"error": e.stderr.decode("utf-8")}, status_code=500)
